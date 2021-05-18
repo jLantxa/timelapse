@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import cv2
 import time
 import sys
@@ -9,26 +11,24 @@ class Timelapse():
     def __init__(self, interval):
         self.interval = interval
 
-    def start(self):
+    def run(self):
         n = 0
+        start = timer()
+        self.camera = cv2.VideoCapture(0)
+        self.camera.set(3, 1920)
+        self.camera.set(4, 1080)
 
         while True:
             start = timer()
-
-            self.camera = cv2.VideoCapture(0)
-            self.camera.set(3, 1920)
-            self.camera.set(4, 1080)
             s, img = self.camera.read()
             if s:
                 cv2.imwrite("pic" + str(n) + ".jpg", img)
                 n += 1
+                print(f"Frame {n}")
 
             now = timer()
             remaining = self.interval - (now - start)
             if (remaining > 0):
-                if (remaining > 3):
-                    self.camera.release()
-
                 time.sleep(remaining)
 
 
@@ -39,4 +39,4 @@ if __name__ == "__main__":
 
     interval = float(sys.argv[1])
     timelapse_camera = Timelapse(interval)
-    timelapse_camera.start()
+    timelapse_camera.run()
