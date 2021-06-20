@@ -1,42 +1,42 @@
 #!/usr/bin/env python3
 
-import cv2
+"""
+Timelapse capturer
+"""
+
+import argparse
 import time
-import sys
-import subprocess
 
 from timeit import default_timer as timer
 
-class Timelapse():
-    def __init__(self, interval):
-        self.interval = interval
+import cv2
 
-    def run(self):
-        n = 0
-        start = timer()
-        self.camera = cv2.VideoCapture(0)
-        self.camera.set(3, 1920)
-        self.camera.set(4, 1080)
+def run_timelapse(interval):
+    """ Run timelapse """
 
-        while True:
-            start = timer()
-            s, img = self.camera.read()
-            if s:
-                cv2.imwrite("pic" + str(n) + ".jpg", img)
-                n += 1
-                print(f"Frame {n}")
+    frame_num = 0
+    time_start = timer()
+    camera = cv2.VideoCapture(0)
+    camera.set(3, 1920)
+    camera.set(4, 1080)
 
-            now = timer()
-            remaining = self.interval - (now - start)
-            if (remaining > 0):
-                time.sleep(remaining)
+    while True:
+        time_start = timer()
+        read_ok, frame = camera.read()
+        if read_ok:
+            cv2.imwrite("pic" + str(frame_num) + ".jpg", frame)
+            frame_num += 1
+            print(f"Frame {frame_num}")
+
+        time_now = timer()
+        remaining = interval - (time_now - time_start)
+        if remaining > 0:
+            time.sleep(remaining)
 
 
 if __name__ == "__main__":
-    if (len(sys.argv) < 2):
-        print("Error: Specify an interval for the timelapse")
-        exit()
+    parser = argparse.ArgumentParser(description='Timelapse capturer.')
+    parser.add_argument('interval', type=float, help='The interframe time interval in seconds')
+    args = parser.parse_args()
 
-    interval = float(sys.argv[1])
-    timelapse_camera = Timelapse(interval)
-    timelapse_camera.run()
+    run_timelapse(args.interval)
